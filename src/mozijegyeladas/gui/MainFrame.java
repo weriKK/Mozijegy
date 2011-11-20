@@ -19,27 +19,32 @@ import mozijegyeladas.action.ActionHandler;
  */
 public class MainFrame extends JFrame {
     
+    private ActionHandler actionHandler;
+    private SQLServer db;
+    
     public MainFrame() 
     {
         super("Foablak");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
+        InitializeDatabase();        
+        
+        actionHandler = new ActionHandler(this,this.db);
+        
         CreateMenuBar();
         
-        this.pack();
+        //this.pack();
+        this.setSize(800, 600);        
+        this.setLocationRelativeTo(null);        
         this.setVisible(true);
+        
         
     }
     
     private void InitializeDatabase()
     {
-        SQLServer sql = null;
-
         try {
-            sql = new SQLServer("localhost",3306,"MoziDB", "root", "root");
-
-            //CoursesTableWindow ctw = new CoursesTableWindow(sql.getConnection());
-            //ctw.setVisible(true);
+            db = new SQLServer("localhost",3306,"MoziDB", "root", "root");
 
         } catch (Exception e) {
             System.err.println("Hiba: " + e.getMessage());
@@ -63,7 +68,7 @@ public class MainFrame extends JFrame {
 
         // Kilepes
         menuItem = new JMenuItem();
-        menuItem.setAction(ActionHandler.Exit);
+        menuItem.setAction(actionHandler.Exit);
         menu.add(menuItem);
         
         // Adatok menu
@@ -74,12 +79,12 @@ public class MainFrame extends JFrame {
         
         // Termek
         menuItem = new JMenuItem();
-        menuItem.setAction(ActionHandler.ShowRoomInformation);
+        menuItem.setAction(actionHandler.ShowRoomInformation);
         menu.add(menuItem);
         
         // Filmek
         menuItem = new JMenuItem();
-        menuItem.setAction(ActionHandler.ShowMovieInformation);
+        menuItem.setAction(actionHandler.ShowMovieInformation);
         menu.add(menuItem);        
         
        
@@ -88,6 +93,4 @@ public class MainFrame extends JFrame {
         
         this.setJMenuBar(menuBar);
     }
-    
-    
 }

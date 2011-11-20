@@ -4,18 +4,24 @@
  */
 package mozijegyeladas.action;
 
+import java.awt.Window;
+import mozijegyeladas.db.SQLServer;
+
 /**
  *
  * @author Peter
  */
 public final class ActionHandler {
     
-    public static final AHExitAction Exit = new AHExitAction();
-    public static final AHShowRoomInformationAction ShowRoomInformation = new AHShowRoomInformationAction();
-    public static final AHShowMovieInformationAction ShowMovieInformation = new AHShowMovieInformationAction();
+    public AHExitAction Exit;
+    public AHShowRoomInformationAction ShowRoomInformation;
+    public AHShowMovieInformationAction ShowMovieInformation;
     
     // Private constructor, igy veletlenul sem nem lehet peldanyositani
-    private ActionHandler() {
+    public ActionHandler(Window owner, SQLServer db) {
+        Exit = new AHExitAction();
+        ShowRoomInformation = new AHShowRoomInformationAction(owner, db);
+        ShowMovieInformation = new AHShowMovieInformationAction(owner, db);        
     }
     
 }
