@@ -35,6 +35,8 @@ public class AHShowMovieInformationAction extends AbstractAction {
         
         if ( movieInformationDlg == null )
             movieInformationDlg = new MovieInformationDialog(this.owner, this.db);
+        else
+            movieInformationDlg.UpdateDialog();
         
         movieInformationDlg.setVisible(true);
     }    

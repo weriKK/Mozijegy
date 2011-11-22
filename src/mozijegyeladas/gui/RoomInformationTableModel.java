@@ -4,7 +4,11 @@
  */
 package mozijegyeladas.gui;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 import mozijegyeladas.db.SQLServer;
 
@@ -21,10 +25,11 @@ public class RoomInformationTableModel extends AbstractTableModel {
     public RoomInformationTableModel(SQLServer db) {
         this.db = db;
         
-        columnNames = new String[] {"Cím","Szinkron","Származás","Rendező","Hossz","Szinopszis"};
+        columnNames = new String[] {"Terem Név","Sorok Száma","Oszlopok Száma","Férőhelyek"};
         rowData = null;
-        
+
         LoadData();
+
     }
     
 
@@ -37,10 +42,20 @@ public class RoomInformationTableModel extends AbstractTableModel {
     public int getColumnCount() {
         return columnNames.length;
     }
+    
+    @Override
+    public String getColumnName(int col) {
+        return columnNames[col];
+    }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         return rowData.get(rowIndex)[columnIndex];
+    }
+    
+    @Override
+    public Class getColumnClass(int col) {
+        return getValueAt(0,col).getClass();
     }
 
     private void LoadData() {
@@ -48,6 +63,7 @@ public class RoomInformationTableModel extends AbstractTableModel {
         if ( rowData != null)
             rowData.clear();
         
+       
         rowData = db.GetRoomInformation();
     }
     

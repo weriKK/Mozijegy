@@ -35,6 +35,8 @@ public class AHShowRoomInformationAction extends AbstractAction {
         
         if ( roomInformationDlg == null )
             roomInformationDlg = new RoomInformationDialog(this.owner,db);
+        else
+            roomInformationDlg.UpdateDialog();
         
         roomInformationDlg.setVisible(true);
     }    
