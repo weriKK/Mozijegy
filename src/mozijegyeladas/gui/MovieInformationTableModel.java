@@ -48,13 +48,34 @@ public class MovieInformationTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
+        
+        if ( columnIndex == 1 )
+            return (Integer)rowData.get(rowIndex)[columnIndex] == 1 ? "szinkronizált" : "feliratos";
+        
         return rowData.get(rowIndex)[columnIndex];
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+        if ( columnIndex >= this.columnNames.length )
+            return;
+        
+        if ( columnIndex == 1)
+            rowData.get(rowIndex)[columnIndex] = ((String)aValue).equals("szinkronizált") ? 1 : 2;
+        else
+            rowData.get(rowIndex)[columnIndex] = aValue;
+        
+        fireTableCellUpdated(rowIndex, columnIndex);
     }
     
     // Szinopszis az utolso mezo
     // oszlopok szama+2 re
     public String getSynopse(int rowIndex) {
         return (rowData.get(rowIndex)[this.columnNames.length+1]).toString();
+    }
+    
+    public void setSynopse(int rowIndex, String value) {
+        rowData.get(rowIndex)[this.columnNames.length+1] = value;
     }
     
     // movie_id az utolso elotti mezo
@@ -72,7 +93,7 @@ public class MovieInformationTableModel extends AbstractTableModel {
     public void fireTableDataChanged() {
         super.fireTableDataChanged();
         
-        LoadData();
+        //LoadData();
     }
 
     @Override
@@ -80,16 +101,24 @@ public class MovieInformationTableModel extends AbstractTableModel {
         return true;
     }
     
-    
-    
-    
-
     private void LoadData() {
         
         if ( rowData != null)
             rowData.clear();
         
         rowData = db.GetMovieInformation();
+    }
+    
+    public boolean UpdateTable(boolean updateDatabase) {
+        
+        if ( !updateDatabase ) {
+            LoadData();
+            return true;
+        }
+        
+        // Adatbazis frissitese
+                
+        return db.SetMovieInformation(rowData);        
     }
     
 }

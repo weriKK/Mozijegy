@@ -7,6 +7,10 @@ package mozijegyeladas.gui;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -17,8 +21,12 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import mozijegyeladas.db.SQLServer;
 
@@ -26,7 +34,7 @@ import mozijegyeladas.db.SQLServer;
  *
  * @author Peter
  */
-public class MovieInformationDialog extends JDialog {
+public class MovieInformationDialog extends OKCancelDialog {
     
     SQLServer db;
     MovieInformationTableModel tableData;
@@ -54,8 +62,18 @@ public class MovieInformationDialog extends JDialog {
         InitalizeTable();
         InitializeSynopsisArea();
         
-        this.pack();    
+        this.add(buttonPanel);
+        this.setOKButtonText("Módosít");
+        this.disableOK();
         
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                disableOK();
+            }
+        });
+        
+        this.pack();    
         this.setLocationRelativeTo(null);
         this.setAlwaysOnTop(true);
         this.setVisible(false);        
@@ -63,16 +81,35 @@ public class MovieInformationDialog extends JDialog {
     }
 
     private void InitializeSynopsisArea() {
-        this.synopseArea = new JTextArea(tableData.getSynopse(0));
+        this.synopseArea = new JTextArea();
         this.synopseArea.setRows(8);
         this.synopseArea.setEditable(false);
         this.synopseArea.setLineWrap(true);
         this.synopseArea.setWrapStyleWord(true);
         
-        this.add(new JLabel("Szinopszis:",SwingConstants.LEFT));
-        this.add(new JScrollPane(this.synopseArea));        
-    }
+        this.synopseArea.addKeyListener(new KeyListener() {
 
+            @Override
+            public void keyTyped(KeyEvent e) {
+                UpdateSynopsisData();               
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                //throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });
+        
+        this.add(new JLabel("Szinopszis:",SwingConstants.LEFT));
+        this.add(new JScrollPane(this.synopseArea));    
+        
+    }
+    
     private void InitalizeTable() {
         
         tableData = new MovieInformationTableModel(this.db);
@@ -90,11 +127,29 @@ public class MovieInformationDialog extends JDialog {
                 if ( event.getValueIsAdjusting() )
                     return;
                 
-                synopseArea.setText(tableData.getSynopse(table.getSelectionModel().getLeadSelectionIndex()));
+                //int idx = table.getSelectionModel().getLeadSelectionIndex();
+                int idx = table.getSelectedRow();
+                
+                //if ( idx >= 0 && idx < tableData.getRowCount()) {
+                if ( idx != -1 ) {
+                    synopseArea.setText(tableData.getSynopse(idx));
+                    synopseArea.setEditable(true);
+                }
+                else {
+                    synopseArea.setText(null);
+                    synopseArea.setEditable(false);
+                }
             }
             
         });
         
+        this.tableData.addTableModelListener( new TableModelListener() {
+
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                enableOK();
+            }
+        });
         
         // Adatok szerkesztese
         TableColumn dubbingColumn = this.table.getColumnModel().getColumn(1);
@@ -104,5 +159,28 @@ public class MovieInformationDialog extends JDialog {
         dubbingColumn.setCellEditor(new DefaultCellEditor(comboBox));
         
         this.add(new JScrollPane(this.table));
+    }
+
+    private void UpdateSynopsisData() {
+        int idx = table.getSelectedRow();
+        if ( idx != -1 ) {
+            tableData.setSynopse(idx, synopseArea.getText());
+        }
+        enableOK();
+    } 
+    
+    @Override
+    protected boolean processOK() {
+        if ( this.tableData.UpdateTable(true) ) {
+            this.disableOK();
+            return true;
+        }
+        
+        return false;
+    }
+
+    @Override
+    protected void processCancel() {
+        this.tableData.UpdateTable(false);
     }
 }

@@ -45,7 +45,7 @@ public class SQLServer {
     
     public ArrayList<Object[]> GetMovieInformation() {
         
-        String queryString = "SELECT title,dub,origin,director,length,id,synopsis FROM " + this.databaseName + ".MoviesView";
+        String queryString = "SELECT title,dubbing,origin,director,length,id_movie,synopsis FROM " + this.databaseName + ".movies";
         
         PreparedStatement queryStatement = null;
         ResultSet resultSet = null;
@@ -62,7 +62,7 @@ public class SQLServer {
                 Object[] resultRow = new Object[7];
                 
                 resultRow[0] = resultSet.getString(1);
-                resultRow[1] = resultSet.getString(2);
+                resultRow[1] = resultSet.getInt(2);
                 resultRow[2] = resultSet.getString(3);
                 resultRow[3] = resultSet.getString(4);
                 resultRow[4] = resultSet.getInt(5);
@@ -104,6 +104,56 @@ public class SQLServer {
         }
         
         return result;        
+    }
+    
+    public boolean SetMovieInformation(ArrayList<Object[]> rowData) {
+        
+        String updateString = "UPDATE " + this.databaseName + ".movies " +
+                "SET title = ?, dubbing = ?, origin = ?, director = ?, length = ?, synopsis = ? " +
+                "WHERE id_movie = ?";
+        
+        PreparedStatement updateMovies = null;
+        
+        try {
+            this.connection.setAutoCommit(false);
+            updateMovies = this.connection.prepareStatement(updateString);
+            
+            for ( Object[] row : rowData ) {
+                updateMovies.setString(1,row[0].toString()); // title
+                updateMovies.setInt(2,(Integer)row[1]); // dubbing                
+                updateMovies.setString(3,row[2].toString()); // origin
+                updateMovies.setString(4,row[3].toString()); // director
+                updateMovies.setInt(5,(Integer)row[4]); // length                
+                updateMovies.setString(6,row[6].toString()); // synopsis
+                
+                updateMovies.setInt(7,(Integer)row[5]); // id
+
+                // Az adatbazis frissitese
+                updateMovies.executeUpdate();
+                this.connection.commit();
+            }
+        } catch ( SQLException ex ) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
+            try {
+                this.connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
+            return false;
+            
+        } finally {
+            if ( updateMovies != null ) {
+                try {
+                    updateMovies.close();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            return true;
+        }
     }
 
     public ArrayList<Object[]> GetRoomInformation() {
