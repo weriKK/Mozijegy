@@ -85,7 +85,15 @@ public class MainFrame extends JFrame {
         // Filmek
         menuItem = new JMenuItem();
         menuItem.setAction(actionHandler.ShowMovieInformation);
-        menu.add(menuItem);        
+        menu.add(menuItem); 
+        
+        // Separator
+        menu.addSeparator();
+        
+        // Uj Film
+        menuItem = new JMenuItem();
+        menuItem.setAction(actionHandler.ShowNewMovie);
+        menu.add(menuItem);
         
        
         

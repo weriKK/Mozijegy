@@ -14,15 +14,12 @@ import java.awt.event.WindowEvent;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -91,7 +88,7 @@ public class MovieInformationDialog extends OKCancelDialog {
 
             @Override
             public void keyTyped(KeyEvent e) {
-                UpdateSynopsisData();               
+                //throw new UnsupportedOperationException("Not supported yet.");
             }
 
             @Override
@@ -101,7 +98,7 @@ public class MovieInformationDialog extends OKCancelDialog {
 
             @Override
             public void keyReleased(KeyEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet.");
+                UpdateSynopsisData();
             }
         });
         
