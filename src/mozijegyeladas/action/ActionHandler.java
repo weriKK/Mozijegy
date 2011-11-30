@@ -18,6 +18,8 @@ public final class ActionHandler {
     public AHShowMovieInformationAction ShowMovieInformation;
     public AHShowNewMovieAction ShowNewMovie;
     
+    public AHOpenShowInformationAction OpenShowInformation;
+    
     // Private constructor, igy veletlenul sem nem lehet peldanyositani
     public ActionHandler(Window owner, SQLServer db) {
         Exit = new AHExitAction();
@@ -26,6 +28,8 @@ public final class ActionHandler {
         ShowMovieInformation = new AHShowMovieInformationAction(owner, db);        
         
         ShowNewMovie = new AHShowNewMovieAction(owner, db);
+        
+        OpenShowInformation = new AHOpenShowInformationAction(owner, db);
     }
     
 }

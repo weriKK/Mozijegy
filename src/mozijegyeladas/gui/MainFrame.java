@@ -95,6 +95,17 @@ public class MainFrame extends JFrame {
         menuItem.setAction(actionHandler.ShowNewMovie);
         menu.add(menuItem);
         
+        // Előadások menu
+        // =========================================
+        menu = new JMenu("Előadások");
+        menu.setMnemonic(KeyEvent.VK_E);
+        menuBar.add(menu);
+        
+        // Hozzáadás
+        menuItem = new JMenuItem();
+        menuItem.setAction(actionHandler.OpenShowInformation);
+        menu.add(menuItem);
+        
        
         
         

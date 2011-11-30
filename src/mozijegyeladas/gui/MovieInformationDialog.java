@@ -66,6 +66,8 @@ public class MovieInformationDialog extends OKCancelDialog {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
+                tableData.UpdateTable(false);
+                UpdateDialog();
                 disableOK();
             }
         });

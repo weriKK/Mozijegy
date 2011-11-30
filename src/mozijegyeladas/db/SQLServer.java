@@ -132,6 +132,7 @@ public class SQLServer {
                 updateMovies.executeUpdate();
                 this.connection.commit();
             }
+            
         } catch ( SQLException ex ) {
             Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
             try {
@@ -215,6 +216,254 @@ public class SQLServer {
         
         return result;
         
-    }    
+    }
+    
+    public boolean AddNewMovie(Object[] rowData) {
         
+//        for ( Object o : rowData) 
+//            System.out.println(o.toString());
+        
+        String insertString = "INSERT INTO " + this.databaseName + ".movies " +
+                "(title, origin, dubbing, director, synopsis, length) " +
+                "VALUES (?,?,?,?,?,?)";
+        
+        PreparedStatement insertMovie = null;
+        
+        try {
+            this.connection.setAutoCommit(false);
+            
+            insertMovie = this.connection.prepareStatement(insertString);
+
+            insertMovie.setString(1,rowData[0].toString()); // title
+            insertMovie.setString(2,rowData[1].toString()); // origin                
+            insertMovie.setInt(3,(Integer)rowData[2]); // dubbing
+            insertMovie.setString(4,rowData[3].toString()); // director
+            insertMovie.setString(5,rowData[5].toString()); // synopsis
+            insertMovie.setInt(6,(Integer)rowData[4]); // length  
+            
+            // Az adatbazis frissitese
+            insertMovie.executeUpdate();
+            this.connection.commit();
+            
+        } catch ( SQLException ex ) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
+            try {
+                this.connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
+            return false;
+            
+        } finally {
+
+            if ( insertMovie != null ) {
+                try {
+                    insertMovie.close();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            return true;
+        }
+    }
+    
+    
+    public ArrayList<Object[]> GetRoomNames() {
+        
+        String queryString = "SELECT name,id_room FROM " + this.databaseName + ".rooms";
+        
+        PreparedStatement queryStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<Object[]> result = new ArrayList<Object[]>();
+        
+        try {
+            
+            queryStatement = this.connection.prepareStatement(queryString,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+            resultSet = queryStatement.executeQuery();
+        
+            // Lekerdezett adatok feldolgozasa
+            while (resultSet.next()) {
+                
+                Object[] resultRow = new Object[2];
+                
+                resultRow[0] = resultSet.getString(1);
+                resultRow[1] = resultSet.getInt(2);
+                
+                result.add(resultRow);
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } finally {
+
+            // Eroforrasok felszabaditasa
+            // forditott sorrendben
+            if ( resultSet != null ) {
+                
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                resultSet = null;                                
+            }
+            
+            if ( queryStatement != null ) {
+                
+                try {
+                    queryStatement.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                queryStatement = null;                                
+            }                        
+            
+        }
+        
+        return result;
+        
+    }
+
+    public boolean AddNewShow(Object[] rowData) {
+//        for ( Object o : rowData) 
+//            System.out.println(o.toString());
+        
+        String insertString = "INSERT INTO " + this.databaseName + ".shows " +
+                "(movie, start_date, room) VALUES (?,?,?)";
+        
+        PreparedStatement insertShow = null;
+        
+        try {
+            this.connection.setAutoCommit(false);
+            
+            insertShow = this.connection.prepareStatement(insertString);
+
+            insertShow.setInt(1,(Integer)rowData[0]); // title
+            insertShow.setString(2,rowData[1].toString()); // origin                
+            insertShow.setInt(3,(Integer)rowData[2]); // dubbing
+            
+            // Az adatbazis frissitese
+            insertShow.executeUpdate();
+            this.connection.commit();
+            
+        } catch ( SQLException ex ) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
+            try {
+                this.connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
+            return false;
+            
+        } finally {
+
+            if ( insertShow != null ) {
+                try {
+                    insertShow.close();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            return true;
+        }
+    }
+
+    public int GetShowsRunningAtDate(String date, int length, int roomID)
+    {
+        
+        String queryString = "SELECT id_show, start_date, length FROM "+this.databaseName+".shows,"+this.databaseName+".movies "+
+        "WHERE shows.movie = movies.id_movie " +
+        "AND room = ? "+
+        "AND ((? BETWEEN start_date AND (start_date + INTERVAL length MINUTE)) "+
+        "OR ((? + INTERVAL ? MINUTE) BETWEEN start_date AND (start_date + INTERVAL length MINUTE)) "+
+        "OR (? < start_date AND (? + INTERVAL ? MINUTE) > (start_date + INTERVAL length MINUTE)))";
+
+        /*
+            ujfilm_kezdete between jelenlegi_kezdete or jelenlegi_vege OR
+            ujfilm_vege between jelenlegi_kezdete or jelenlegi_vege OR
+            ujfilm_kezdete < jelenlegi_kezdete AND ujfilm_vege > jelenlegi_vege
+         */
+        
+        PreparedStatement queryStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<Object[]> result = new ArrayList<Object[]>();
+        int size = 0;
+        
+        try {
+            
+            queryStatement = this.connection.prepareStatement(queryString,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+            
+            queryStatement.setInt(1, roomID);   // room = ?
+            queryStatement.setString(2, date);  // date
+            queryStatement.setString(3, date);  // date            
+            queryStatement.setInt(4, length);   // length
+            queryStatement.setString(5, date);  // date
+            queryStatement.setString(6, date);  // date
+            queryStatement.setInt(7, length);   // length
+            
+            System.out.println(queryStatement.toString());
+            resultSet = queryStatement.executeQuery();
+            
+        
+            // Lekerdezett adatok feldolgozasa
+            
+            // Talalatok megszamolasa
+            resultSet.beforeFirst();
+            resultSet.last();
+            size = resultSet.getRow();
+            
+//            while (resultSet.next()) {
+//                
+//                Object[] resultRow = new Object[2];
+//                
+//                resultRow[0] = resultSet.getString(1);
+//                resultRow[1] = resultSet.getInt(2);
+//                
+//                result.add(resultRow);
+//            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } finally {
+
+            // Eroforrasok felszabaditasa
+            // forditott sorrendben
+            if ( resultSet != null ) {
+                
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                resultSet = null;                                
+            }
+            
+            if ( queryStatement != null ) {
+                
+                try {
+                    queryStatement.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                queryStatement = null;                                
+            }                        
+            
+        }
+        
+        return size;
+        
+    }            
+            
 } 
