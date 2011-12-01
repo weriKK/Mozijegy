@@ -40,8 +40,8 @@ public class RoomInformationDialog extends JDialog {
 
     private void InitializeDialog() {
         
-        this.setDefaultCloseOperation(HIDE_ON_CLOSE);        
-
+        this.setDefaultCloseOperation(HIDE_ON_CLOSE); 
+        
         InitializeTable();  
         
         this.pack();

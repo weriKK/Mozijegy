@@ -12,16 +12,16 @@ import mozijegyeladas.db.SQLServer;
  *
  * @author Peter
  */
-public class RoomInformationTableModel extends AbstractTableModel {
+public class ShowInformationTableModel extends AbstractTableModel {
     
     private SQLServer db;
     private final String[] columnNames;
     private ArrayList<Object[]> rowData;
         
-    public RoomInformationTableModel(SQLServer db) {
+    public ShowInformationTableModel(SQLServer db) {
         this.db = db;
         
-        columnNames = new String[] {"Terem Név","Sorok Száma","Oszlopok Száma","Férőhelyek"};
+        columnNames = new String[] {"show_id","Film","Terem","Kezdet","Vége","Foglalások"};
         rowData = null;
 
         LoadData();
@@ -60,7 +60,20 @@ public class RoomInformationTableModel extends AbstractTableModel {
             rowData.clear();
         
        
-        rowData = db.GetRoomInformation();
+        rowData = db.GetShowInformation();
     }
+    
+    public boolean UpdateTable(boolean updateDatabase) {
+        
+        if ( !updateDatabase ) {
+            LoadData();
+            return true;
+        }
+        
+        // Adatbazis frissitese
+                
+        //return db.SetMovieInformation(rowData);        
+        return true;
+    }    
     
 }

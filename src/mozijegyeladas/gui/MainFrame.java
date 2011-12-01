@@ -103,7 +103,15 @@ public class MainFrame extends JFrame {
         
         // Hozzáadás
         menuItem = new JMenuItem();
-        menuItem.setAction(actionHandler.OpenShowInformation);
+        menuItem.setAction(actionHandler.ShowShowInformation);
+        menu.add(menuItem);   
+        
+        // Separator
+        menu.addSeparator();        
+        
+        // Hozzáadás
+        menuItem = new JMenuItem();
+        menuItem.setAction(actionHandler.NewShowInformation);
         menu.add(menuItem);
         
        

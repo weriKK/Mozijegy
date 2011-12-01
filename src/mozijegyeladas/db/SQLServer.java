@@ -410,7 +410,7 @@ public class SQLServer {
             queryStatement.setString(6, date);  // date
             queryStatement.setInt(7, length);   // length
             
-            System.out.println(queryStatement.toString());
+//            System.out.println(queryStatement.toString());
             resultSet = queryStatement.executeQuery();
             
         
@@ -420,17 +420,7 @@ public class SQLServer {
             resultSet.beforeFirst();
             resultSet.last();
             size = resultSet.getRow();
-            
-//            while (resultSet.next()) {
-//                
-//                Object[] resultRow = new Object[2];
-//                
-//                resultRow[0] = resultSet.getString(1);
-//                resultRow[1] = resultSet.getInt(2);
-//                
-//                result.add(resultRow);
-//            }
-            
+                     
         } catch (SQLException ex) {
             Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
             
@@ -464,6 +454,91 @@ public class SQLServer {
         
         return size;
         
-    }            
+    }
+
+    public ArrayList<Object[]> GetShowInformation() {
+        /*
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date FROM shows,movies,rooms 
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
+         * 
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date,
+(SELECT COUNT(*) FROM seats WHERE `show`=id_show) AS fog
+FROM (shows,movies,rooms)
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room          
+         * 
+         * 
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date,
+(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=1) AS fog
+FROM (shows,movies,rooms)
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
+         */
+        String queryString = "SELECT id_show,title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date, "+
+                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state>0) AS booked "+
+                "FROM (shows,movies,rooms) "+
+                "WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room";
+        
+        PreparedStatement queryStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<Object[]> result = new ArrayList<Object[]>();
+        
+        try {
+            
+            queryStatement = this.connection.prepareStatement(queryString,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+            resultSet = queryStatement.executeQuery();
+        
+            // Lekerdezett adatok feldolgozasa
+            while (resultSet.next()) {
+                
+                // csak azokat az eloadasokat gyujtsuk ossze
+                // amikre nem lett foglalva vagy eladva jegy
+//                if ( resultSet.getInt(6) == 0)
+//                {
+                    Object[] resultRow = new Object[6];
+
+                    resultRow[0] = resultSet.getInt(1);
+                    resultRow[1] = resultSet.getString(2);
+                    resultRow[2] = resultSet.getString(3);                
+                    resultRow[3] = resultSet.getString(4);                
+                    resultRow[4] = resultSet.getString(5);                                
+                    resultRow[5] = resultSet.getInt(6);
+
+                    result.add(resultRow);
+//                }
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } finally {
+
+            // Eroforrasok felszabaditasa
+            // forditott sorrendben
+            if ( resultSet != null ) {
+                
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                resultSet = null;                                
+            }
+            
+            if ( queryStatement != null ) {
+                
+                try {
+                    queryStatement.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                queryStatement = null;                                
+            }                        
+            
+        }
+        
+        return result;
+        
+    }
             
 } 

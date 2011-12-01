@@ -15,16 +15,16 @@ import mozijegyeladas.gui.NewShowDialog;
  *
  * @author Peter
  */
-class AHOpenShowInformationAction extends AbstractAction {
+public class AHShowNewShowAction extends AbstractAction {
     
     private NewShowDialog newShowDlg;
     private Window owner;
     private SQLServer db;    
     
-    public AHOpenShowInformationAction(Window owner, SQLServer db) {
+    public AHShowNewShowAction(Window owner, SQLServer db) {
         super("Új Előadás...",null);
         putValue(SHORT_DESCRIPTION,"Új Előadások meghirdetése.");
-        putValue(MNEMONIC_KEY, KeyEvent.VK_E);
+        putValue(MNEMONIC_KEY, KeyEvent.VK_U);
         //putValue(ACCELERATOR_KEY,KeyStroke.getKeyStroke(KeyEvent.VK_F,ActionEvent.CTRL_MASK));
         this.owner = owner;
         this.db = db;        

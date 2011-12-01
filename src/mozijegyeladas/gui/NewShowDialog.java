@@ -5,6 +5,7 @@
 package mozijegyeladas.gui;
 
 import java.awt.Dialog;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -16,8 +17,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import javax.swing.GroupLayout;
+import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.LayoutStyle;
 import mozijegyeladas.db.SQLServer;
 
@@ -71,7 +74,7 @@ public class NewShowDialog extends OKCancelDialog {
     }
     
     private void InitializeDialog() {
-        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        this.setDefaultCloseOperation(HIDE_ON_CLOSE);
         //this.setPreferredSize(new Dimension(320,480));
         this.setResizable(false);
         
@@ -150,7 +153,7 @@ public class NewShowDialog extends OKCancelDialog {
             @Override
             public void windowActivated(WindowEvent e) {
                 ResetFields();
-            }
+            }            
         });
         
         this.pack();    
@@ -184,11 +187,22 @@ public class NewShowDialog extends OKCancelDialog {
         data[1] = sqlDate;
         data[2] = roomData.get(cbRooms.getSelectedItem().toString());
 
-        System.out.println(db.GetShowsRunningAtDate(sqlDate, movieLengthData.get(cbMovies.getSelectedItem().toString()), 5));
+        // Ha utkozik egy masik eloadassal, dobjunk hibauzenetet!
+        if (db.GetShowsRunningAtDate(sqlDate, movieLengthData.get(cbMovies.getSelectedItem().toString()),
+                roomData.get(cbRooms.getSelectedItem().toString())) != 0)
+        {
+            Toolkit.getDefaultToolkit().beep();
+            JOptionPane.showMessageDialog(this,
+                    "Ebben a teremben már meg van hirdetve egy előadás erre az időpontra!",
+                    "Előadások ütköznek",
+                    JOptionPane.WARNING_MESSAGE);
+            
+            return false;            
+        }
         
-//        if ( this.db.AddNewShow(data) ) {
-//            return true;
-//        }
+        if ( this.db.AddNewShow(data) ) {
+            return true;
+        }
         
         return false;        
     }

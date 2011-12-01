@@ -18,7 +18,9 @@ public final class ActionHandler {
     public AHShowMovieInformationAction ShowMovieInformation;
     public AHShowNewMovieAction ShowNewMovie;
     
-    public AHOpenShowInformationAction OpenShowInformation;
+    public AHShowNewShowAction NewShowInformation;
+    
+    public AHShowShowInformationAction ShowShowInformation;    
     
     // Private constructor, igy veletlenul sem nem lehet peldanyositani
     public ActionHandler(Window owner, SQLServer db) {
@@ -29,7 +31,9 @@ public final class ActionHandler {
         
         ShowNewMovie = new AHShowNewMovieAction(owner, db);
         
-        OpenShowInformation = new AHOpenShowInformationAction(owner, db);
+        NewShowInformation = new AHShowNewShowAction(owner, db);
+        
+        ShowShowInformation = new AHShowShowInformationAction(owner, db);
     }
     
 }
