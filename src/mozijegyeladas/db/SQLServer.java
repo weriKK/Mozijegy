@@ -540,5 +540,45 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
         return result;
         
     }
+    
+    public boolean DeleteShow(int showID) {
+        
+        String deleteString = "DELETE FROM "+this.databaseName+".shows WHERE id_show=? LIMIT 1";
+        
+        PreparedStatement deleteShow = null;
+        
+        try {
+            this.connection.setAutoCommit(false);
+            
+            deleteShow = this.connection.prepareStatement(deleteString);
+            deleteShow.setInt(1,showID);
+            deleteShow.executeUpdate();
+            
+            this.connection.commit();
+            
+        } catch ( SQLException ex ) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
+            try {
+                this.connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
+            return false;
+            
+        } finally {
+
+            if ( deleteShow != null ) {
+                try {
+                    deleteShow.close();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            return true;
+        }
+    }
             
 } 

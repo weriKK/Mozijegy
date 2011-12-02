@@ -10,8 +10,11 @@ import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.BoxLayout;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.plaf.OptionPaneUI;
 import mozijegyeladas.db.SQLServer;
 
 /**
@@ -44,6 +47,7 @@ public class ShowInformationDialog extends OKCancelDialog {
         
         this.setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         this.setResizable(false);
+        this.setOKButtonText("Törlés");
         
         this.setDefaultCloseOperation(HIDE_ON_CLOSE);        
         
@@ -73,6 +77,7 @@ public class ShowInformationDialog extends OKCancelDialog {
         this.table.setAutoCreateRowSorter(true); 
         this.table.setFillsViewportHeight(true);
         this.table.setPreferredScrollableViewportSize(new Dimension(640,200));
+        this.table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         // elrejtuk az ID oszlopot
         this.table.removeColumn(table.getColumnModel().getColumn(0));
@@ -86,17 +91,45 @@ public class ShowInformationDialog extends OKCancelDialog {
 
     @Override
     protected boolean processOK() {
-        throw new UnsupportedOperationException("Not supported yet.");
+       
         
-        // OK -> Torles gomb
-        // selected rows torlese loopban
-        // ha kivalasztott sor folalasa nem 0
-        // Figyelmeztetes, sor kihagyasa torlesbol.
-        // tehat minden torlet elott ellenorizni kell
+        if ( this.tableData.seatsAreBooked( this.table.getSelectedRow() ) )
+        {
+            JOptionPane.showMessageDialog(
+                    this, "A kijelölt előadásra már foglaltak helyet, törölni nem lehet!",
+                    "Előadás törlése...",
+                    JOptionPane.WARNING_MESSAGE);
+            
+            return false;
+        }
+        
+        DeleteShowAndUpdateDialog();        
+        
+        return false;
     }
 
     @Override
     protected void processCancel() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.tableData.UpdateTable(false);
+    }
+
+    private void DeleteShowAndUpdateDialog()
+    {
+        boolean successfulDelete = db.DeleteShow( this.tableData.showID( this.table.getSelectedRow() ) );
+        
+        if ( !successfulDelete )
+        {
+            JOptionPane.showMessageDialog(
+                    this, "Az előadás törlése során hiba lépett fel!",
+                    "Hiba!",
+                    JOptionPane.ERROR_MESSAGE);
+            
+            return;
+        }
+        
+        this.tableData.UpdateTable(false);
+        this.tableData.fireTableDataChanged();
+        
+       
     }
 }

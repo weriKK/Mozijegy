@@ -49,6 +49,13 @@ public class ShowInformationTableModel extends AbstractTableModel {
         return rowData.get(rowIndex)[columnIndex];
     }
     
+    public boolean seatsAreBooked(int rowIndex) {
+        return ( (Integer)rowData.get(rowIndex)[5] > 0 );
+    }
+    
+    public int showID(int rowIndex) {
+        return (Integer)rowData.get(rowIndex)[0];
+    }
     @Override
     public Class getColumnClass(int col) {
         return getValueAt(0,col).getClass();
