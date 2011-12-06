@@ -22,6 +22,8 @@ public class MainFrame extends JFrame {
     private ActionHandler actionHandler;
     private SQLServer db;
     
+    private ShowListPanel showListPanel;
+    
     public MainFrame() 
     {
         super("Foablak");
@@ -32,6 +34,8 @@ public class MainFrame extends JFrame {
         actionHandler = new ActionHandler(this,this.db);
         
         CreateMenuBar();
+        
+        CreateMainPanel();
         
         //this.pack();
         this.setSize(800, 600);        
@@ -120,4 +124,13 @@ public class MainFrame extends JFrame {
         
         this.setJMenuBar(menuBar);
     }
+
+    private void CreateMainPanel() {
+        
+        showListPanel = new ShowListPanel(db);
+        
+        this.add(showListPanel);
+        //throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
 }

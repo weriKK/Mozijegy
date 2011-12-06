@@ -10,6 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -473,7 +474,7 @@ FROM (shows,movies,rooms)
 WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
          */
         String queryString = "SELECT id_show,title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date, "+
-                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state>0) AS booked "+
+                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=1) AS booked "+
                 "FROM (shows,movies,rooms) "+
                 "WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room";
         
@@ -498,8 +499,8 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
                     resultRow[0] = resultSet.getInt(1);
                     resultRow[1] = resultSet.getString(2);
                     resultRow[2] = resultSet.getString(3);                
-                    resultRow[3] = resultSet.getString(4);                
-                    resultRow[4] = resultSet.getString(5);                                
+                    resultRow[3] = resultSet.getString(4).replace(".0", "");                
+                    resultRow[4] = resultSet.getString(5).replace(".0", "");                                
                     resultRow[5] = resultSet.getInt(6);
 
                     result.add(resultRow);
@@ -580,5 +581,97 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
             return true;
         }
     }
+    
+    public ArrayList<Object[]> GetShowListData() {
+        /*
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date FROM shows,movies,rooms 
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
+         * 
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date,
+(SELECT COUNT(*) FROM seats WHERE `show`=id_show) AS fog
+FROM (shows,movies,rooms)
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room          
+         * 
+         * 
+SELECT  id_show, title,name,start_date,(start_date + INTERVAL length MINUTE) AS end_date,
+(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=1) AS fog
+FROM (shows,movies,rooms)
+WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
+         * 
+         * 
+         * "show_id","Kezdet","Terem","Film","Hossz","Foglalt","Kiadott","Szabad"
+         */
+        String queryString = "SELECT id_show,title,name,start_date,length,rows,columns, "+
+                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=1) AS booked, "+
+                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=2) AS sold "+
+                "FROM (shows,movies,rooms) "+
+                "WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room "+
+                "ORDER BY start_date ASC";
+        
+        PreparedStatement queryStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<Object[]> result = new ArrayList<Object[]>();
+        
+        try {
+            
+            queryStatement = this.connection.prepareStatement(queryString,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+            resultSet = queryStatement.executeQuery();
+        
+            // Lekerdezett adatok feldolgozasa
+            while (resultSet.next()) {
+                
+                Object[] resultRow = new Object[8];
+
+                resultRow[0] = resultSet.getInt(1); // show_id
+                resultRow[1] = resultSet.getString(4).replace(".0", ""); // start date
+                resultRow[2] = resultSet.getString(3); // name               
+                resultRow[3] = resultSet.getString(2); // title
+                resultRow[4] = resultSet.getInt(5); // length
+                resultRow[5] = resultSet.getInt(8); // booked
+                resultRow[6] = resultSet.getInt(9); // sold
+                
+                int roomSize = resultSet.getInt(6) * resultSet.getInt(7);
+                                
+                resultRow[7] = roomSize - resultSet.getInt(8) - resultSet.getInt(9); // free
+
+                result.add(resultRow);
+                
+                //System.out.println(Arrays.toString(resultRow));
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } finally {
+
+            // Eroforrasok felszabaditasa
+            // forditott sorrendben
+            if ( resultSet != null ) {
+                
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                resultSet = null;                                
+            }
+            
+            if ( queryStatement != null ) {
+                
+                try {
+                    queryStatement.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                queryStatement = null;                                
+            }                        
+            
+        }
+        
+        return result;
+        
+    }    
             
 } 

@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.plaf.OptionPaneUI;
 import mozijegyeladas.db.SQLServer;
 
 /**
