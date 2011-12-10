@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
+import mozijegyeladas.db.SQLServer;
 
 /**
  *
@@ -48,12 +49,30 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     private static final Color COLOR_BOOKED = new Color(255,200,200);
     private static final Color COLOR_SOLD = Color.RED;
     
+    private SQLServer db;
+    private int showID;
+    
+    private int freeSeats;
+    private int bookedSeats;
+    private int soldSeats;
+    private String roomName;
+    private String movieName;
+    
 
     /** Creates new form NewJFrame */
-    public MovieBookingDialog(int rows, int columns) {
+    public MovieBookingDialog(SQLServer db, ArrayList<Object> showData) {
         
-        this.rows = rows;
-        this.columns = columns;
+        this.db = db;
+        
+        this.showID = (Integer)showData.get(0);
+        this.roomName = (String)showData.get(2)+" Terem - "+(String)showData.get(1);
+        this.movieName = (String)showData.get(3)+" - "+(Integer)showData.get(4)+" perc";
+        this.bookedSeats = (Integer)showData.get(5);
+        this.soldSeats = (Integer)showData.get(6);
+        this.freeSeats = (Integer)showData.get(7);
+        
+        this.rows = 10;
+        this.columns = 20;
         
         lblSeatRowCounterIcons = new ArrayList<SeatLabel>();
         lblSeatIcons = new ArrayList<SeatLabel>();
@@ -63,7 +82,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     }
     
     private void initDialog() {
-        this.setTitle("NOT_IMPLEMENTED");        
+        this.setTitle("Jegyfoglalás - "+this.roomName);        
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setModalityType(ModalityType.APPLICATION_MODAL);
         this.setAlwaysOnTop(true);
@@ -115,7 +134,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     private void initRoomInformationLayout() {
         
         // Header
-        this.lblRoomName = new JLabel("NOT_IMPLEMENTED");
+        this.lblRoomName = new JLabel(this.roomName);
         this.lblRoomName.setFont(new Font("Tahoma", 1, 24));
         this.lblRoomName.setHorizontalAlignment(SwingConstants.CENTER);
         this.lblRoomName.setHorizontalTextPosition(SwingConstants.CENTER);        
@@ -127,13 +146,13 @@ public class MovieBookingDialog extends javax.swing.JDialog {
         this.lblRoomInformation = new JLabel("Terem információk:");
         this.lblRoomInformation.setFont(new Font("Tahoma", 1, 11));
         
-        this.lblFree = new JLabel("Szabad: NA");
+        this.lblFree = new JLabel("Szabad: "+this.freeSeats);
         this.lblFree.setIcon(new SeatIcon(COLOR_FREE));
         
-        this.lblBooked = new JLabel("Foglalt: NA");
+        this.lblBooked = new JLabel("Foglalt: "+this.bookedSeats);
         this.lblBooked.setIcon(new SeatIcon(COLOR_BOOKED));        
         
-        this.lblSold = new JLabel("Eladva: NA");
+        this.lblSold = new JLabel("Eladva: "+this.soldSeats);
         this.lblSold.setIcon(new SeatIcon(COLOR_SOLD));
         
         this.lblSelectedSeat = new JLabel("Kiválasztott szék:");
@@ -142,8 +161,8 @@ public class MovieBookingDialog extends javax.swing.JDialog {
         this.lblRow = new JLabel("Sor: NA");
         this.lblCol = new JLabel("Oszlop: NA");
         
-        this.btnBook = new JButton("NA-B");
-        this.btnSell = new JButton("NA-S");
+        this.btnBook = new JButton("Foglal");
+        this.btnSell = new JButton("Kiad");
         
         
         GroupLayout informationPanelLayout = new javax.swing.GroupLayout( informationPanel );
@@ -244,7 +263,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
             }
         }
         
-        lblMovieInformation = new JLabel("NA-3");
+        lblMovieInformation = new JLabel(this.movieName);
         lblMovieInformation.setFont(new Font("Tahoma",1,12));
         lblMovieInformation.setHorizontalAlignment(SwingConstants.CENTER);
         
@@ -260,7 +279,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
             pgHRowCounterGroup.addComponent(seat, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
         
         // Sorok felepitese
-        GroupLayout.ParallelGroup pgHSeatGroup = roomLayoutPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING);
+        GroupLayout.ParallelGroup pgHSeatGroup = roomLayoutPanelLayout.createParallelGroup(GroupLayout.Alignment.CENTER);
         for ( int row = 0; row < lblSeatRowCounterIcons.size(); row++ )
         {
             GroupLayout.SequentialGroup sgHRowGroup = roomLayoutPanelLayout.createSequentialGroup();
@@ -285,7 +304,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
                     .addGroup(roomLayoutPanelLayout.createSequentialGroup()
                         .addGroup(pgHRowCounterGroup)
                         // Sorszam utani szunet
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 18, Short.MAX_VALUE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 18, 18 )
                         // Sorok
                         .addGroup(pgHSeatGroup)))
                 .addContainerGap())

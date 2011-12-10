@@ -22,7 +22,6 @@ public final class ActionHandler {
     
     public AHShowShowInformationAction ShowShowInformation;    
     
-    // Private constructor, igy veletlenul sem nem lehet peldanyositani
     public ActionHandler(Window owner, SQLServer db) {
         Exit = new AHExitAction();
         
@@ -34,6 +33,7 @@ public final class ActionHandler {
         NewShowInformation = new AHShowNewShowAction(owner, db);
         
         ShowShowInformation = new AHShowShowInformationAction(owner, db);
+        
     }
     
 }

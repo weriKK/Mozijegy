@@ -5,11 +5,11 @@
 package mozijegyeladas.gui;
 
 import java.awt.Dimension;
-import java.awt.LayoutManager;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.List;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -19,9 +19,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
-//import javax.swing.RowSorter;
-//import javax.swing.SortOrder;
-//import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import mozijegyeladas.db.SQLServer;
 
@@ -35,6 +32,8 @@ public class ShowListPanel extends JPanel {
     JTable table;
     ShowListTableModel tableData;
     TableRowSorter<ShowListTableModel> tableSorter;
+    
+    MovieBookingDialog movieBookingDialog;
     
     JLabel  lFilter;
     JTextField txtFilter;
@@ -90,6 +89,30 @@ public class ShowListPanel extends JPanel {
         
         // Ha rendezunk vagy szurunk, frissiteni kell a kivalasztott sor indexet
         // table.convertRowIndexToModel(table.getSelectedRow());
+        
+        // Dupla kattintas
+       this.table.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e){
+                 if (e.getClickCount() == 2) {
+
+                     // Tabla aktualis nezetenek indexeit vissza kell
+                     // alakitani a modellnek megfelelo indexekre
+                     // Szures soran ezek elcsuszhattak
+                     JTable target = (JTable)e.getSource();
+                     int viewRow = table.getSelectedRow();
+
+                     if ( viewRow < 0 ) {
+                         // Semmi sincs kijelolve az aktualis nezetben
+                         return;
+                     }
+                     
+                     int modelRow = target.convertRowIndexToModel(target.getSelectedRow());
+//                     System.out.println("Double clicked on: "+tableData.showID(modelRow));
+                     OpenMovieBookingDialog(modelRow);
+                 }
+            }
+       });
     }
 
     private void InitializeFilters() {
@@ -143,6 +166,21 @@ public class ShowListPanel extends JPanel {
         
     }
     
-    
+    private void OpenMovieBookingDialog(int row) {
+        
+        ArrayList<Object> showData = new ArrayList<Object>();
+        
+        for ( int i = 0; i < this.tableData.getColumnCount(); i++) {
+            showData.add(this.tableData.getValueAt(row, i));
+        }
+        
+        System.out.println(showData);
+
+        
+        movieBookingDialog = new MovieBookingDialog(this.db,showData);
+        
+        movieBookingDialog.setVisible(true);
+        
+    }
     
 }
