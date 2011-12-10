@@ -9,6 +9,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -176,6 +178,7 @@ public class ShowListPanel extends JPanel {
         
         showData.add(this.tableData.getRoomRowCount(row));
         showData.add(this.tableData.getRoomColumnCount(row));
+        showData.add(this.tableData.getRoomID(row));
         
 //        System.out.println(showData);
 
@@ -184,5 +187,10 @@ public class ShowListPanel extends JPanel {
         
         movieBookingDialog.setVisible(true);
         
+    }
+    
+    public void UpdatePanel() {
+        this.tableData.UpdateTable(false);
+        this.tableData.fireTableDataChanged();
     }
 }

@@ -5,7 +5,7 @@
 package mozijegyeladas.gui;
 
 import java.awt.Color;
-import java.awt.event.MouseListener;
+import java.awt.event.MouseAdapter;
 import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 
@@ -32,7 +32,7 @@ public class Seat extends SeatLabel {
     private Border unselectedBorder;
     
     
-    public Seat( int row, int col, int status, MouseListener actionHandler)
+    public Seat( int row, int col, int status, MouseAdapter actionHandler)
     {
         super(null);
         
@@ -66,7 +66,6 @@ public class Seat extends SeatLabel {
     public void setStatus( int status) {
         this.status = status;
         SetIcon();
-        this.validate();
     }
     
     public void setSelected(boolean isSelected) {
@@ -111,6 +110,8 @@ public class Seat extends SeatLabel {
             default:
                 this.icon.setBgColor(COLOR_FREE);
         }
+        
+        this.updateUI();
     }
     
 }

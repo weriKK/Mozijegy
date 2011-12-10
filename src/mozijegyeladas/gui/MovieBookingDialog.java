@@ -6,13 +6,17 @@ package mozijegyeladas.gui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
@@ -22,7 +26,7 @@ import mozijegyeladas.db.SQLServer;
  *
  * @author Peter
  */
-public class MovieBookingDialog extends javax.swing.JDialog {
+public class MovieBookingDialog extends JDialog {
     
     private JLabel lblRoomName;
     
@@ -49,12 +53,14 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     
     private SQLServer db;
     private int showID;
+    private int roomID;    
     
     private int freeSeats;
     private int bookedSeats;
     private int soldSeats;
     private String roomName;
     private String movieName;
+   
     
     private ArrayList<int[]> seatData;
     
@@ -62,7 +68,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     private static final int STATUS_BOOKED = 1;
     private static final int STATUS_SOLD = 2;
     
-    private MouseListener SeatSelectionHandler;
+    private MouseAdapter SeatSelectionHandler;
     
     private int selectedSeatIndex;
     
@@ -85,11 +91,13 @@ public class MovieBookingDialog extends javax.swing.JDialog {
         
         this.rows = (Integer)showData.get(8);
         this.columns = (Integer)showData.get(9);
+        this.roomID = (Integer)showData.get(10);
         
         lblSeatRowCounterIcons = new ArrayList<SeatRowCounter>();
         lblSeatIcons = new ArrayList<Seat>();
         
         LoadData();
+        
 //        
 //        for ( int i = 0; i < seatData.size(); i++ ) {
 //            for ( int j = 0; j < seatData.get(i).length;j++)
@@ -184,7 +192,24 @@ public class MovieBookingDialog extends javax.swing.JDialog {
         this.lblCol = new JLabel("Oszlop:");
         
         this.btnBook = new JButton("Foglal");
+        this.btnBook.setEnabled(false);
+        this.btnBook.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                UpdateSeatStatus(STATUS_BOOKED);
+            }
+        });
+        
         this.btnSell = new JButton("Kiad");
+        this.btnSell.setEnabled(false);
+        this.btnSell.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                UpdateSeatStatus(STATUS_SOLD);
+            }
+        });
         
         
         GroupLayout informationPanelLayout = new javax.swing.GroupLayout( informationPanel );
@@ -395,7 +420,7 @@ public class MovieBookingDialog extends javax.swing.JDialog {
     }
 
     private void initMouseAdapter() {
-        SeatSelectionHandler = new MouseListener() {
+        SeatSelectionHandler = new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -405,11 +430,6 @@ public class MovieBookingDialog extends javax.swing.JDialog {
                 if ( seat.isSelected() )
                     return;
                 
-//                System.out.println("R: "+seat.getRowPosition()+" C: "+seat.getColPosition());
-
-//                for ( Seat s : lblSeatIcons )
-//                    s.setSelected(false);
-
                 // Az elozo kivalasztast megszuntetjuk
                 if ( selectedSeatIndex >= 0)
                     lblSeatIcons.get(selectedSeatIndex).setSelected(false);
@@ -420,27 +440,74 @@ public class MovieBookingDialog extends javax.swing.JDialog {
                 
                 lblRow.setText("Sor: "+(seat.getRowPosition()+1));
                 lblCol.setText("Oszlop: "+(seat.getColPosition()+1));
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                //throw new UnsupportedOperationException("Not supported yet.");
+                
+                UpdateButtonStates(seat.getStatus());
             }
         };
+    }
+    
+    public void UpdateSeatStatus( int status ) {
+        
+        int[] updateData = new int[5];
+        
+        updateData[0] = this.showID;
+        updateData[1] = this.roomID;
+        updateData[2] = lblSeatIcons.get(selectedSeatIndex).getRowPosition();
+        updateData[3] = lblSeatIcons.get(selectedSeatIndex).getColPosition();
+        updateData[4] = status;
+        
+        if ( db.SetSeatStatus(updateData) ) {
+            LoadData();
+            lblSeatIcons.get(selectedSeatIndex).setStatus(status);
+            UpdateButtonStates(status);
+            UpdateMovieInformation();
+            
+            
+            //this.validate();
+        } else {
+            JOptionPane.showMessageDialog(
+                    this, "Nem sikerült a kijelölt szék állapotát megváltoztatni. Kérem próbálja újra!",
+                    "Jegy kiadása/foglalása",
+                    JOptionPane.WARNING_MESSAGE);            
+        }
+        
+    }
+    
+    public void UpdateButtonStates(int status ) {
+        if ( status == STATUS_BOOKED )
+            btnSell.setEnabled(true);
+        else 
+            btnSell.setEnabled(false);
+
+        if ( status < STATUS_BOOKED )
+            btnBook.setEnabled(true);
+        else
+            btnBook.setEnabled(false);
+    }
+    
+    public void UpdateMovieInformation() {
+        
+        int free = this.rows*this.columns;        
+        int booked = 0;
+        int sold = 0;
+        
+        for ( int[] seat : seatData ) {
+            switch ( seat[5] ) {
+                case 1:
+                    booked++;
+                    break;
+                    
+                case 2:
+                    sold++;
+                    break;
+            }
+        }
+        
+        free -= (booked + sold );
+        
+        lblFree.setText("Szabad: "+String.valueOf(free));
+        lblBooked.setText("Foglalt: "+String.valueOf(booked));
+        lblSold.setText("Eladva: "+String.valueOf(sold));
+                
     }
 }

@@ -5,6 +5,8 @@
 package mozijegyeladas.gui;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -26,7 +28,7 @@ public class MainFrame extends JFrame {
     
     public MainFrame() 
     {
-        super("Foablak");
+        super("Programozási Technológia 2 - 1. Beadandó - KOPOABI.ELTE");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         InitializeDatabase();        
@@ -130,6 +132,15 @@ public class MainFrame extends JFrame {
         showListPanel = new ShowListPanel(db);
         
         this.add(showListPanel);
+        
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowActivated(WindowEvent e) {
+                
+                showListPanel.UpdatePanel();
+
+            }
+        });         
         //throw new UnsupportedOperationException("Not yet implemented");
     }
     

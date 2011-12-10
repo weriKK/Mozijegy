@@ -10,7 +10,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -603,7 +602,7 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
          */
         String queryString = "SELECT id_show,title,name,start_date,length,rows,columns, "+
                 "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=1) AS booked, "+
-                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=2) AS sold "+
+                "(SELECT COUNT(*) FROM seats WHERE `show`=id_show AND state=2) AS sold, id_room "+
                 "FROM (shows,movies,rooms) "+
                 "WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room "+
                 "ORDER BY start_date ASC";
@@ -620,7 +619,7 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
             // Lekerdezett adatok feldolgozasa
             while (resultSet.next()) {
                 
-                Object[] resultRow = new Object[10];
+                Object[] resultRow = new Object[11];
 
                 resultRow[0] = resultSet.getInt(1); // show_id
                 resultRow[1] = resultSet.getString(4).replace(".0", ""); // start date
@@ -636,6 +635,7 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
                 
                 resultRow[8] = resultSet.getInt(6); // row count
                 resultRow[9] = resultSet.getInt(7); // column count
+                resultRow[10] = resultSet.getInt(10); // column count
 
                 result.add(resultRow);
                 
@@ -749,6 +749,52 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
     }  
     
     
+    
+    public boolean SetSeatStatus(int[] rowData) {
+        
+        String insertString = "REPLACE INTO " + this.databaseName + ".seats " +
+                "(`show`,`room_id`,`row`,`column`,`state`) "+
+                "VALUES (?,?,?,?,?)";
+        
+        PreparedStatement insertSeat = null;
+        
+        try {
+            this.connection.setAutoCommit(false);
+            insertSeat = this.connection.prepareStatement(insertString);
+            
+            insertSeat.setInt(1,rowData[0]); // show
+            insertSeat.setInt(2,rowData[1]); // room
+            insertSeat.setInt(3,rowData[2]); // row
+            insertSeat.setInt(4,rowData[3]); // col
+            insertSeat.setInt(5,rowData[4]); // status
+
+            // Az adatbazis frissitese
+            insertSeat.executeUpdate();
+            this.connection.commit();
+            
+        } catch ( SQLException ex ) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);   
+            try {
+                this.connection.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex1);
+            }
+            
+            return false;
+            
+        } finally {
+            if ( insertSeat != null ) {
+                try {
+                    insertSeat.close();
+                    
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            return true;
+        }
+    }    
     
     
     

@@ -87,6 +87,10 @@ public class ShowListTableModel extends AbstractTableModel {
                 
         //return db.SetMovieInformation(rowData);        
         return true;
-    }    
+    }
+
+    Object getRoomID(int rowIndex) {
+        return (Integer)rowData.get(rowIndex)[10];
+    }
     
 }
