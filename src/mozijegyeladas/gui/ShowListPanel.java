@@ -174,7 +174,10 @@ public class ShowListPanel extends JPanel {
             showData.add(this.tableData.getValueAt(row, i));
         }
         
-        System.out.println(showData);
+        showData.add(this.tableData.getRoomRowCount(row));
+        showData.add(this.tableData.getRoomColumnCount(row));
+        
+//        System.out.println(showData);
 
         
         movieBookingDialog = new MovieBookingDialog(this.db,showData);
@@ -182,5 +185,4 @@ public class ShowListPanel extends JPanel {
         movieBookingDialog.setVisible(true);
         
     }
-    
 }

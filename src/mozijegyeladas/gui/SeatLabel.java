@@ -4,7 +4,6 @@
  */
 package mozijegyeladas.gui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import javax.swing.JLabel;
@@ -16,9 +15,9 @@ import javax.swing.SwingConstants;
  */
 public class SeatLabel extends JLabel {
     
-    public SeatLabel(String labelText, boolean drawBorder, SeatIcon icon)
+    public SeatLabel(String labelText)
     {
-        super(labelText,icon,SwingConstants.CENTER);
+        super(labelText,SwingConstants.CENTER);
         
         this.setFont(new Font("Tahoma", 1, 12));
         this.setMaximumSize(new Dimension(16, 20));
@@ -27,9 +26,9 @@ public class SeatLabel extends JLabel {
         
 //        this.setHorizontalAlignment(SwingConstants.CENTER);        
 //        this.setText(labelText);        
-        
-        if ( drawBorder )
-            this.setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLACK));
+//        
+//        if ( drawBorder )
+//            this.setBorder(javax.swing.BorderFactory.createLineBorder(Color.BLACK));
         
     }
     

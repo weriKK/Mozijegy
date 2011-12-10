@@ -620,7 +620,7 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
             // Lekerdezett adatok feldolgozasa
             while (resultSet.next()) {
                 
-                Object[] resultRow = new Object[8];
+                Object[] resultRow = new Object[10];
 
                 resultRow[0] = resultSet.getInt(1); // show_id
                 resultRow[1] = resultSet.getString(4).replace(".0", ""); // start date
@@ -633,6 +633,9 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
                 int roomSize = resultSet.getInt(6) * resultSet.getInt(7);
                                 
                 resultRow[7] = roomSize - resultSet.getInt(8) - resultSet.getInt(9); // free
+                
+                resultRow[8] = resultSet.getInt(6); // row count
+                resultRow[9] = resultSet.getInt(7); // column count
 
                 result.add(resultRow);
                 
@@ -673,5 +676,81 @@ WHERE shows.movie = movies.id_movie AND shows.room = rooms.id_room
         return result;
         
     }    
+    
+    
+    
+    public ArrayList<int[]> GetShowSeatStates(int show_id) {
+        
+        String queryString = "SELECT * "+
+                "FROM "+ this.databaseName+".seats "+
+                "WHERE seats.show=? "+
+                "ORDER BY state ASC";
+        
+        PreparedStatement queryStatement = null;
+        ResultSet resultSet = null;
+        ArrayList<int[]> result = new ArrayList<int[]>();
+        
+        try {
+            
+            queryStatement = this.connection.prepareStatement(queryString,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+            queryStatement.setInt(1, show_id);
+            resultSet = queryStatement.executeQuery();
+        
+            // Lekerdezett adatok feldolgozasa
+            while (resultSet.next()) {
+                
+                int[] resultRow = new int[6];
+
+                resultRow[0] = resultSet.getInt(1); // seat_id
+                resultRow[1] = resultSet.getInt(2); // show_id
+                resultRow[2] = resultSet.getInt(3); // room_id
+                resultRow[3] = resultSet.getInt(4); // rows
+                resultRow[4] = resultSet.getInt(5); // columns
+                resultRow[5] = resultSet.getInt(6); // seat state
+                
+                result.add(resultRow);
+                
+                //System.out.println(Arrays.toString(resultRow));
+            }
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } finally {
+
+            // Eroforrasok felszabaditasa
+            // forditott sorrendben
+            if ( resultSet != null ) {
+                
+                try {
+                    resultSet.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                resultSet = null;                                
+            }
+            
+            if ( queryStatement != null ) {
+                
+                try {
+                    queryStatement.close();
+                } catch (SQLException ex) {
+                    Logger.getLogger(SQLServer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                queryStatement = null;                                
+            }                        
+            
+        }
+        
+        return result;
+        
+    }  
+    
+    
+    
+    
+    
             
 } 

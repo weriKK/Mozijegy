@@ -46,8 +46,18 @@ public class ShowListTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
+
+        
         return rowData.get(rowIndex)[columnIndex];
     }
+    
+    public int getRoomRowCount(int rowIndex) {
+        return (Integer)rowData.get(rowIndex)[8];
+    }
+    
+    public int getRoomColumnCount(int rowIndex) {
+        return (Integer)rowData.get(rowIndex)[9];
+    }    
     
     public int showID(int rowIndex) {
         return (Integer)rowData.get(rowIndex)[0];
