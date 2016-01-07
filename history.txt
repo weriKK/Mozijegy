@@ -1,5 +1,0 @@
-git remote add origin git@github.com:weriKK/Twitter2IRC.git
-git config --global user.name "Peter Kovacs"
-git config --global user.email "github@werik.com"
-git config --global github.user weriKK
-git config --global github.token 7059ff8ac7a1a559f176f362718920db
